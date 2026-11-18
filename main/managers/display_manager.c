@@ -783,6 +783,16 @@ static __attribute__((unused)) void invert_flush_cb(lv_disp_drv_t *drv, const lv
 #endif
 }
 
+#ifdef CONFIG_IS_VIRTUAL_DISPLAY
+/* No panel behind the flush stage: hand the area straight to the mirror stream
+ * (same call invert_flush_cb() starts with) and mark it done. */
+static void virtual_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area,
+                             lv_color_t *color_p) {
+    screen_mirror_send_area(area, color_p);
+    lv_disp_flush_ready(drv);
+}
+#endif
+
 #ifdef CONFIG_CROWPANEL_ADVANCED_P4
 static void (*s_p4_buffer_copy)(lv_draw_ctx_t *, void *, lv_coord_t, const lv_area_t *,
                                 void *, lv_coord_t, const lv_area_t *);
@@ -2266,6 +2276,9 @@ ESP_LOGI(TAG, "T-Deck trackball ISRs registered");
   /* Advance 4.3/5/7 use the dedicated RGB driver below. Keep the legacy LVGL
    * display helper out of this branch; only initialize GT911 touch here. */
   touch_driver_init();
+#elif defined(CONFIG_IS_VIRTUAL_DISPLAY)
+  /* Virtual display: no panel, no SPI bus, no touch controller to bring up. */
+  ESP_LOGI(TAG, "Virtual display build: no panel initialized, frames via mirror");
 #else
   lvgl_driver_init();
 #endif
@@ -2471,7 +2484,11 @@ ESP_LOGI(TAG, "T-Deck trackball ISRs registered");
   disp_drv.full_refresh = 1;
 #endif
 
+#ifdef CONFIG_IS_VIRTUAL_DISPLAY
+  disp_drv.flush_cb = virtual_flush_cb;
+#else
   disp_drv.flush_cb = invert_flush_cb;
+#endif
   disp_drv.draw_buf = &disp_buf;
 #if CONFIG_GHOSTESP_P4_PPA_RENDER
   if (!lv_draw_ppa_v8_install(&disp_drv)) {

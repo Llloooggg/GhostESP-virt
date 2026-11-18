@@ -19,7 +19,9 @@ static bool s_mirror_enabled = false;
 static uint32_t s_frame_count = 0;
 
 #define CHUNK_BUF_SIZE 1024
-static uint8_t *s_chunk_buf = NULL;
+/* Static buffer: malloc(1024) fails on a fragmented internal heap on non-PSRAM
+ * builds, and the mirror then silently drops every frame. */
+static uint8_t s_chunk_buf[CHUNK_BUF_SIZE];
 static uint16_t s_checksum;
 // Mirror pixel format tradeoffs:
 // - 8-bit RGB332: 1.0 B/px (fastest, most banding)
@@ -250,11 +252,6 @@ static uint32_t estimate_rle8(const lv_color_t *pixels, uint32_t pixel_count) {
 
 void screen_mirror_send_area(const lv_area_t *area, lv_color_t *color_p) {
     if (!s_mirror_enabled || !area || !color_p) return;
-
-    if (!s_chunk_buf) {
-        s_chunk_buf = (uint8_t *)malloc(CHUNK_BUF_SIZE);
-        if (!s_chunk_buf) return;
-    }
 
     uint16_t w = area->x2 - area->x1 + 1;
     uint16_t h = area->y2 - area->y1 + 1;

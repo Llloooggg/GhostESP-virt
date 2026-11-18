@@ -69,7 +69,17 @@ menu "Ghost ESP Options"
         default n
         help
             Enable or disable screen support.
-    
+
+    config IS_VIRTUAL_DISPLAY
+        bool "Virtual display (no panel, frames via screen mirroring)"
+        default n
+        depends on WITH_SCREEN
+        help
+            Render the LVGL UI entirely in memory with no physical panel
+            attached. Frames leave the device only through the screen-mirror
+            stream ("mirror on"); navigation comes from the "input" CLI
+            command, which the mirror viewer's virtual controls send.
+
     config TFT_WIDTH
         int "TFT Width"
         default 240

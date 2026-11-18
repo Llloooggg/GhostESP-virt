@@ -26,6 +26,13 @@
 #define CONFIG_USE_ENCODER 1
 #endif
 
+/* Virtual-display boards get d-pad/SELECT from the CLI and dashboard but have
+ * no touch/joystick hardware: compile the btnmatrix keyboard in this file only,
+ * same local-define pattern as the AtomS3R override above. */
+#if defined(CONFIG_IS_VIRTUAL_DISPLAY) && !defined(CONFIG_USE_JOYSTICK)
+#define CONFIG_USE_JOYSTICK 1
+#endif
+
 #define KEYBOARD_COLUMNS 10
 
 /* iOS-style matrix layout: every row of every page sums to KB_UNITS_PER_ROW so
