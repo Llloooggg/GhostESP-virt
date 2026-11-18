@@ -1,3 +1,10 @@
+> [!WARNING]
+> **What this fork adds:**
+>
+> - **Generic flash storage** (`HAS_FLASH_STORAGE`): lets any board without an SD slot mount its internal flash as wear-levelled FAT at `/mnt` - not only hardcoded boards.
+> - **Virtual display** (`IS_VIRTUAL_DISPLAY`): run the whole UI with no screen attached - frames stream out over the serial link via screen mirroring to the [web dashboard](https://ghostesp.net/dashboard), whose on-screen controls navigate the UI.
+> - Board config for a non-standard **ESP32-S3-DevKitC-1 "N8R0"** (an N8R2 unit: 8 MB flash, PSRAM not working)
+
 <img width="800" alt="ghostesp_logo_white_transparent_2x_shine" src="https://github.com/user-attachments/assets/36005ffd-9cfc-433e-a306-1606feb18107" />
 
 > **The ESP-IDF-native wireless security platform for ESP32.**
