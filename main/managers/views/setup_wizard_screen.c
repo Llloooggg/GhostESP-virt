@@ -55,6 +55,10 @@ static const WifiCountry wifi_countries[] = {
 
 static lv_obj_t *root = NULL;
 static SetupStep current_step = SETUP_STEP_WELCOME;
+/* Router back from keyboard_view re-runs create() with the same step, which
+ * would reopen the keyboard forever. Track the step that opened it so the
+ * re-entry goes back one step instead. */
+static SetupStep keyboard_opened_step = SETUP_STEP_COUNT;
 static int selected_country_index = 0;
 static char temp_ap_ssid[33] = {0};
 static char temp_ap_password[65] = {0};
@@ -362,6 +366,7 @@ static void sta_password_callback(const char *text) {
 static void start_btn_event_cb(lv_event_t *e) {
     (void)e;
     current_step = SETUP_STEP_AP_SSID;
+    keyboard_opened_step = SETUP_STEP_AP_SSID;
     const char *cur_ssid = settings_get_ap_ssid(&G_Settings);
     if (cur_ssid && cur_ssid[0]) {
         strncpy(temp_ap_ssid, cur_ssid, sizeof(temp_ap_ssid) - 1);
@@ -1004,6 +1009,12 @@ static void setup_wizard_create(void) {
             show_welcome_screen();
             break;
         case SETUP_STEP_AP_SSID: {
+            if (keyboard_opened_step == SETUP_STEP_AP_SSID) {
+                keyboard_opened_step = SETUP_STEP_COUNT;
+                wizard_goto_step(SETUP_STEP_WELCOME);
+                return;
+            }
+            keyboard_opened_step = SETUP_STEP_AP_SSID;
             if (temp_ap_ssid[0] == '\0') {
                 const char *cur_ssid = settings_get_ap_ssid(&G_Settings);
                 if (cur_ssid && cur_ssid[0]) {
@@ -1019,6 +1030,12 @@ static void setup_wizard_create(void) {
             return;
         }
         case SETUP_STEP_AP_PASSWORD: {
+            if (keyboard_opened_step == SETUP_STEP_AP_PASSWORD) {
+                keyboard_opened_step = SETUP_STEP_COUNT;
+                wizard_goto_step(SETUP_STEP_AP_SSID);
+                return;
+            }
+            keyboard_opened_step = SETUP_STEP_AP_PASSWORD;
             if (temp_ap_password[0] == '\0') {
                 const char *cur_pass = settings_get_ap_password(&G_Settings);
                 if (cur_pass && cur_pass[0]) {
@@ -1035,6 +1052,12 @@ static void setup_wizard_create(void) {
             return;
         }
         case SETUP_STEP_STA_SSID: {
+            if (keyboard_opened_step == SETUP_STEP_STA_SSID) {
+                keyboard_opened_step = SETUP_STEP_COUNT;
+                wizard_goto_step(SETUP_STEP_AP_PASSWORD);
+                return;
+            }
+            keyboard_opened_step = SETUP_STEP_STA_SSID;
             if (temp_sta_ssid[0] == '\0') {
                 const char *cur_ssid = settings_get_sta_ssid(&G_Settings);
                 if (cur_ssid && cur_ssid[0]) {
@@ -1050,6 +1073,12 @@ static void setup_wizard_create(void) {
             return;
         }
         case SETUP_STEP_STA_PASSWORD: {
+            if (keyboard_opened_step == SETUP_STEP_STA_PASSWORD) {
+                keyboard_opened_step = SETUP_STEP_COUNT;
+                wizard_goto_step(SETUP_STEP_STA_SSID);
+                return;
+            }
+            keyboard_opened_step = SETUP_STEP_STA_PASSWORD;
             if (temp_sta_password[0] == '\0') {
                 const char *cur_pass = settings_get_sta_password(&G_Settings);
                 if (cur_pass && cur_pass[0]) {
@@ -1528,6 +1557,7 @@ static void get_setup_wizard_callback(void **callback) {
 void setup_wizard_reset_and_open(void) {
     wizard_exiting = false;
     current_step = SETUP_STEP_WELCOME;
+    keyboard_opened_step = SETUP_STEP_COUNT;
     selected_country_index = 0;
     temp_ap_ssid[0] = '\0';
     temp_ap_password[0] = '\0';
