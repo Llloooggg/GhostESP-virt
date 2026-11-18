@@ -1,0 +1,19 @@
+# Non-OTA (factory) partition table for the ESP32-S3-DevKitC-1 N8R0 (8MB flash).
+# N8R0 is our designation for this unit: a DevKitC-1 shipped as N8R2 whose
+# PSRAM is dead. The layout is plain 8MB-flash geometry, so it also suits
+# healthy N8R2/R8 units running the same SPIRAM=n profile.
+#
+# Mirrors partitions_atoms3r.csv scaled up for a board used for captures: the
+# FAT 'storage' partition (wear-levelled, mounted at /mnt by the
+# HAS_FLASH_STORAGE code path) grows to ~3.7 MB at the cost of a slightly
+# larger coredump allowance. app0 keeps the same 0x3E0000 budget the generic
+# esp32s3 builds use, which the CI size gate enforces against that layout.
+#
+# Layout: nvs ends 0x10000, app runs to 0x3F0000, storage at 0x400000 for
+# 0x3C0000, coredump 0x20000 at 0x7C0000, table ends at 0x7E0000 (8MB part).
+#
+# Name,     Type, SubType,  Offset,   Size,     Flags
+nvs,        data, nvs,      0x9000,   0x7000,
+app0,       app,  factory,  0x10000,  0x3E0000,
+storage,    data, fat,      0x400000, 0x3C0000,
+coredump,   data, coredump, 0x7C0000, 0x20000,
