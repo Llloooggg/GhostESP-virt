@@ -13,6 +13,7 @@
 #include "esp_mac.h"
 #include "esp_netif.h"
 #include "esp_timer.h"
+#include "esp_vfs_fat.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -726,10 +727,12 @@ void handle_ps_cmd(int argc, char **argv) {
 
 void handle_df_cmd(int argc, char **argv) {
     (void)argc; (void)argv;
-    struct statvfs stats;
-    if (statvfs("/mnt", &stats) != 0) { glog("df: /mnt unavailable\n"); return; }
-    unsigned long long total = (unsigned long long)stats.f_blocks * stats.f_frsize;
-    unsigned long long free_bytes = (unsigned long long)stats.f_bavail * stats.f_frsize;
+    /* No statvfs backend for FATFS in the IDF VFS; query the mount like `sd status` does. */
+    uint64_t total = 0, free_bytes = 0;
+    if (esp_vfs_fat_info("/mnt", &total, &free_bytes) != ESP_OK || total == 0) {
+        glog("df: /mnt unavailable\n");
+        return;
+    }
     glog("Filesystem      Total       Used       Free\n");
     glog("/mnt       %llu KiB  %llu KiB  %llu KiB\n", total / 1024,
          total >= free_bytes ? (total - free_bytes) / 1024 : 0, free_bytes / 1024);

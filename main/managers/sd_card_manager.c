@@ -545,7 +545,7 @@ void sd_card_get_cached_stats(sd_card_cached_stats_t *out) {
     }
 }
 
-#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R)
+#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R) || defined(CONFIG_HAS_FLASH_STORAGE)
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 static bool s_virtual_storage_mounted = false;
 
@@ -685,7 +685,7 @@ esp_err_t sd_card_init(void) {
   sd_card_manager.card = NULL;
 
 
-#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R)
+#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R) || defined(CONFIG_HAS_FLASH_STORAGE)
   ESP_LOGI(TAG, "Board without SD card detected - attempting virtual storage mount");
   
   vTaskDelay(pdMS_TO_TICKS(100));
@@ -1412,7 +1412,7 @@ void sd_card_jit_end(bool display_was_suspended) {
 }
 
 void sd_card_unmount_with_context(sd_unmount_context_t context) {
-#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R)
+#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R) || defined(CONFIG_HAS_FLASH_STORAGE)
   if (s_virtual_storage_mounted) {
     unmount_virtual_storage();
     sd_card_manager.is_initialized = false;
@@ -2077,7 +2077,7 @@ read_error:
 }
 
 void sd_card_print_config() {
-#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R)
+#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R) || defined(CONFIG_HAS_FLASH_STORAGE)
   if (s_virtual_storage_mounted) {
     printf("Storage Configuration: Virtual Flash Storage\n");
     printf("Mount Point: /mnt\n");
@@ -2108,7 +2108,7 @@ void sd_card_print_config() {
 }
 
 bool sd_card_is_virtual_storage() {
-#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R)
+#if defined(CONFIG_IS_S3TWATCH) || defined(CONFIG_IS_ATOMS3R) || defined(CONFIG_HAS_FLASH_STORAGE)
   return s_virtual_storage_mounted;
 #else
   return false;
