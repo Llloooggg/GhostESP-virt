@@ -67,6 +67,10 @@ void handle_input_cmd(int argc, char **argv) {
             .data.joystick_index = joystick_index,
             .data.joystick_pressed = true
         };
+        /* Physical joysticks always pair press with release; the keyboard
+         * view commits letters on release, so press alone never types. */
+        xQueueSend(input_queue, &evt, 0);
+        evt.data.joystick_pressed = false;
         xQueueSend(input_queue, &evt, 0);
     }
 }
